@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<style>
+    body{
+        width: 100%;
+        height: 100vh;
+        color: #fff;
+        background: linear-gradient(-45deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);
+        font-family: Helvetica, sans-serif;
+        text-align: center;
+    }
+    
+    
+    table.center {
+        margin-left: auto; 
+        margin-right: auto;
+    }
+
+    thead {
+        background:darkcyan;
+        padding: 10px, 15px;
+    }
+
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        $.get("https://www.cs.kent.ac.uk/people/staff/yh/co539-A2/countryData.php?regions", function(json) {
+            $.each(json, function(key, value) {
+                $('#select').append("<option value=" + value + " selected>" + value + "</option>");
+            });
+        });
+
+        $(document).ready(function() {
+            var tbody = document.getElementById('tableData');
+            var avgPopulation = 0;
+            $("#select").change(function() {
+                $.get("https://www.cs.kent.ac.uk/people/staff/yh/co539-A2/countryData.php?region=" + $(this).val(), function(data) {
+                    $('#tableData').empty();
+                    $('#loc').empty();
+                    $('#col').empty();
+                    var avgPopulation = 0;
+                    var numOfCountries = 0;
+                    var table = document.getElementById('tableData');
+                    for (var i = 0; i < data.length; i++) {
+                        var row = `<tr>
+        					<td>${data[i].code}</td>
+        					<td>${data[i].name}</td>
+        					<td>${data[i].capital}</td>
+        					<td>${data[i].info['population']}</td>
+        					<td>${data[i].info['language']}</td>
+        			  </tr>`
+                      table.innerHTML += row;
+                      numOfCountries +=1;
+                      avgPopulation += data[i].info['population'];
+                    }
+                    avgPopulation = avgPopulation / numOfCountries;
+                    document.getElementById("loc").innerHTML = "Number of Countries = " + numOfCountries;
+                    document.getElementById("col").innerHTML = "Average Population = " + avgPopulation;
+                })
+
+            })
+        });
+        
+    $(document).ready(function() {
+        $('th').each(function(col) {
+            $(this).hover(
+                function() {
+                    $(this).addClass('focus');
+                },
+                function() {
+                    $(this).removeClass('focus');
+                }
+            );
+            $(this).click(function() {
+                if ($(this).is('.asc')) {
+                    $(this).removeClass('asc');
+                    $(this).addClass('desc selected');
+                    sortOrder = -1;
+                } else {
+                    $(this).addClass('asc selected');
+                    $(this).removeClass('desc');
+                    sortOrder = 1;
+                }
+                $(this).siblings().removeClass('asc selected');
+                $(this).siblings().removeClass('desc selected');
+                var arrData = $('table').find('tbody >tr:has(td)').get();
+                arrData.sort(function(a, b) {
+                    var val1 = $(a).children('td').eq(col).text().toUpperCase();
+                    var val2 = $(b).children('td').eq(col).text().toUpperCase();
+                    if ($.isNumeric(val1) && $.isNumeric(val2))
+                        return sortOrder == 1 ? val1 - val2 : val2 - val1;
+                    else
+                        return (val1 < val2) ? -sortOrder : (val1 > val2) ? sortOrder : 0;
+                });
+                $.each(arrData, function(index, row) {
+                    $('tbody').append(row);
+                });
+            });
+        });
+    });
+
+    </script>
+    <title>Assignment 2</title>
+</head>
+
+<body>
+    <h1>Selecting Regions</h1>
+    <form class="regions">
+        <label for="#select">Select a region:</label>
+        <select id="select"></select>
+    </form>
+    <br><br>
+
+    <div id = "loc"></div>
+    <div id = "col"></div>
+
+
+
+    <table class="center">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Capital</th>
+                <th>Population</th>
+                <th>Language</th>
+            </tr>
+        </thead>
+        <tbody id="tableData">
+            
+        </tbody>
+    </table>
+    
+
+</body>
+
+</html>
